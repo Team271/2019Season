@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# The uninstall process leaves behind an empty directory, let's clean that up
+
+rm -rf /usr/local/natinst/atomiczynqk
+
+if ! rm -rf /var/local/natinst/nirio_control; then
+	echo "ERROR: Failed to remove the /var/local/natinst/nirio_control folder"
+	exit -2
+fi
+
+if ! rm -f /etc/natinst/nirio_control; then
+	echo "ERROR: Failed to remove the /etc/natinst/nirio_control symlink"
+	exit -3
+fi
+
+# Clearing INI tokens. Previously located in the CDF under a MergeINI entry
+if ! /usr/local/natinst/bin/nirtcfg --file /etc/natinst/share/ni-rt.ini --clear section="LVRT",token="ELVPingTimeout"; then
+	echo "ERROR: Failed to execute /usr/local/natinst/bin/nirtcfg --file /etc/natinst/share/ni-rt.ini --clear section='LVRT',token='ELVPingTimeout'"
+	exit -4
+fi
+
+if ! /usr/local/natinst/bin/nirtcfg --file /usr/local/natinst/share/NI-RIO/Plugins/atomiczynq.ini --clear section="EnumeratorPlugin",token="Path" --rm-if-empty; then
+	echo "ERROR: Failed to execute /usr/local/natinst/bin/nirtcfg --file /usr/local/natinst/share/NI-RIO/Plugins/atomiczynq.ini --clear section='EnumeratorPlugin',token='Path' --rm-if-empty"
+	exit -5
+fi
+
+if ! /usr/local/natinst/bin/nirtcfg --file /usr/local/natinst/share/NI-RIO/Plugins/atomiczynq.ini --clear section="EnumeratorPlugin",token="Path64" --rm-if-empty; then
+	echo "ERROR: Failed to execute /usr/local/natinst/bin/nirtcfg --file /usr/local/natinst/share/NI-RIO/Plugins/atomiczynq.ini --clear section='EnumeratorPlugin',token='Path64' --rm-if-empty"
+	exit -6
+fi
+

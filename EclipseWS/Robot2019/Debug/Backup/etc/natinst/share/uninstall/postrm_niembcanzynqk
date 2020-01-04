@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -rf /usr/local/natinst/niembcanzynqk
+
+rm -rf /etc/init.d/niembcan
+
+update-rc.d -f niembcan remove

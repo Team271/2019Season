@@ -1,0 +1,58 @@
+#!/bin/sh
+
+nirtcfg=/usr/local/natinst/bin/nirtcfg
+base=0
+
+function setGpioDirVal()
+{
+   port=`expr $base + $1`
+   echo $port > /sys/class/gpio/export
+   if [ -e /sys/class/gpio/gpio$port ]; then
+      echo out > /sys/class/gpio/gpio$port/direction
+      chmod a+rw /sys/class/gpio/gpio$port/value
+   fi
+}
+
+function setGpioBase()
+{
+   baseFile=`find /sys/class/gpio/*/ -name "base"`
+   if [ "$baseFile" != "" ];then
+      base=`cat $baseFile`
+   fi
+   $nirtcfg --set section=EMBCAN,token=TransceiverGPIOBase,value=$base
+}
+
+function configGpio()
+{
+   setGpioBase
+
+   gpioPort1=`$nirtcfg --get section=EMBCAN,token=TransceiverGPIOPort1`
+
+   if [ $gpioPort1 ]; then
+      setGpioDirVal $gpioPort1
+   fi
+
+   gpioPort2=`$nirtcfg --get section=EMBCAN,token=TransceiverGPIOPort2`
+
+   if [ $gpioPort2 ]; then
+      setGpioDirVal $gpioPort2
+   fi
+}
+
+case "$1" in
+  start)
+   configGpio
+   ;;
+  stop)
+   # do nothing
+   ;;
+  force-reload|restart|reload)
+   # do nothing
+   ;;
+  *)
+   echo "Usage: $progname {start|stop|restart|reload|force-reload}" >&2
+   exit 1
+   ;;
+esac
+
+exit 0

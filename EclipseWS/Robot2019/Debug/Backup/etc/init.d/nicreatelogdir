@@ -1,0 +1,11 @@
+#! /bin/sh
+# Copyright (c) 2012-2013 National Instruments.
+# All rights reserved.
+#
+# Ensure the log directory is always present with the correct
+# ownership.
+
+log_dir="/var/local/natinst/log"
+
+mkdir -p -m 777 $log_dir
+chown lvuser:ni $log_dir

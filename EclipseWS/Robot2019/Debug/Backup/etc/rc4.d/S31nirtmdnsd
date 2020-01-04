@@ -1,0 +1,38 @@
+#! /bin/sh
+# (c) 2013 National Instruments Corporation
+
+progname=nirtmdnsd
+progpath=/usr/local/natinst/bin/nirtmdnsd
+
+# init.d script from National Instruments
+test -x "$progpath" || exit 0
+
+startdaemon(){
+	[ "${VERBOSE}" != "no" ] && echo -n "Starting $progname: "
+	start-stop-daemon --start -x $progpath
+	test $? -eq 1 || [ "${VERBOSE}" != "no" ] && echo "done"
+}
+stopdaemon(){
+	echo -n "Stopping $progname: "
+	start-stop-daemon --stop --quiet -x $progpath
+	echo "done"
+}
+
+case "$1" in
+  start)
+	startdaemon
+	;;
+  stop)
+  	stopdaemon
+	;;
+  force-reload|restart|reload)
+  	stopdaemon
+	startdaemon
+	;;
+  *)
+	echo "Usage: $progname {start|stop|restart|reload|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

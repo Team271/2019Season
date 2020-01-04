@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-rc.d -f nivisaserverd remove
+/etc/init.d/nivisaserverd stop

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+for kalmod in /lib/modules/*/kernel/natinst/nikal/nikal.ko; do
+   rm -f ${kalmod}
+   rmdir -p $(dirname ${kalmod})
+done > /dev/null 2>&1
+
+rm -f /usr/local/sbin/nidevnode
+rm -rf /var/lib/nikal
+rm -f /etc/natinst/nikal
+if [ "$1" != "upgrade" ]; then
+   # Some installation environments fail to remove symlinks that were dangling
+   # at the time of uninstall
+   rm -f /usr/local/bin/updateNIDrivers
+   rm -f /etc/natinst/nikal
+   rm -f /usr/local/natinst/nikal/src/utility.sh
+fi
+
+# Source the tools to be able to look up the kernel version we're targeting
+if [ -r /usr/local/natinst/tools/versioning_utils.sh ]; then
+   . /usr/local/natinst/tools/versioning_utils.sh
+   depmod $(kernel_version)
+else
+   depmod
+fi
+
+

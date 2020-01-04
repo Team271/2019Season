@@ -1,0 +1,3 @@
+KERNEL=="u3v*", MODE="0666"
+ACTION=="add", SUBSYSTEM=="usbmisc", RUN+="/bin/chmod a+w /sys%p/device/segmented_xfer_enabled"
+ACTION=="add", SUBSYSTEM=="usbmisc", RUN+="/bin/chmod a+w /sys%p/device/legacy_ctrl_ep_stall_enabled"

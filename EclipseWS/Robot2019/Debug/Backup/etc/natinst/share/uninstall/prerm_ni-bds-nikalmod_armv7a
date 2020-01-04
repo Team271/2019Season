@@ -1,0 +1,3 @@
+#!/bin/sh
+/usr/local/natinst/nikal/bin/nikalKernelInstaller.sh -d nibds -r "/usr/local/natinst/nibds/src/objects/nibds-unversioned.o"
+

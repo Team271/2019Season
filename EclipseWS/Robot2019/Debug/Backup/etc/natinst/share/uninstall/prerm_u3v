@@ -1,0 +1,18 @@
+#!/bin/sh
+
+modulePath=/usr/local/natinst/u3v
+moduleSrcPath=$modulePath/src
+
+# Source the tools, prepare the environment
+. /usr/local/natinst/tools/versioning_utils.sh
+setup_versioning_env
+
+# uninstall
+versioning_call make -C $moduleSrcPath uninstall clean >/tmp/u3vClean.log 2>&1
+
+rm -rf /lib/modules/`kernel_version`/kernel/natinst/u3v
+
+rm -rf /etc/init.d/u3vdriver
+update-rc.d -f u3vdriver remove
+
+/sbin/depmod `kernel_version`

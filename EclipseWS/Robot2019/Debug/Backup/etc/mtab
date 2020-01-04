@@ -1,0 +1,14 @@
+ubi1:rootfs / ubifs rw,relatime 0 0
+devtmpfs /dev devtmpfs rw,relatime,size=124616k,nr_inodes=31154,mode=755 0 0
+sysfs /sys sysfs rw,relatime 0 0
+proc /proc proc rw,relatime 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,mode=755 0 0
+tmpfs /var/volatile tmpfs rw,relatime,size=65536k 0 0
+ubi0:bootfs /boot ubifs rw,sync,noatime 0 0
+debugfs /sys/kernel/debug debugfs rw,relatime 0 0
+configfs /sys/kernel/config configfs rw,relatime 0 0
+devpts /dev/pts devpts rw,relatime,gid=5,mode=620,ptmxmode=000 0 0
+ubi0:config /etc/natinst/share ubifs rw,sync,relatime 0 0
+tracefs /sys/kernel/debug/tracing tracefs rw,relatime 0 0
+none /dev/cgroup/cpuset cgroup rw,relatime,cpuset,noprefix,release_agent=/sbin/cpuset_release_agent 0 0
+none /dev/cgroup/cpuacct cgroup rw,relatime,cpuacct 0 0

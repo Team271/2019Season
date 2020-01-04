@@ -1,0 +1,126 @@
+#!/bin/sh
+#
+# Copyright (c) 2013 National Instruments
+#
+
+arch=`uname -m`
+mount_point="/boot"
+
+if [ "$arch" = "armv7l" ]; then
+	kernel="linux_runmode.itb"
+elif [ "$arch" = "x86_64" ]; then
+	kernel="runmode"
+fi
+
+awk '{print $2;}' < /proc/mounts | grep -q /boot || exit 1
+
+# erase the kernel
+[ -n "$kernel" ] && rm -rf ${mount_point}/$kernel
+if [ $? -ne 0 ]; then
+	echo postrm failed!
+	exit 1
+fi
+
+rm -f /mnt/userfs/etc/volatile.cache
+
+# Cleanup the module versioning resources
+rm -rf /mnt/userfs/usr/local/natinst/tools
+grep -q /mnt/userfs/var/volatile/tmp/headers /proc/mounts && umount /mnt/userfs/var/volatile/tmp/headers || true
+grep -q /mnt/userfs/var/volatile/tmp/tools /proc/mounts && umount /mnt/userfs/var/volatile/tmp/tools || true
+
+# Cleanup remaining symlinks after uninstall
+rm -f /mnt/userfs/bin/hostname
+rm -f /mnt/userfs/etc/rc0.d/K20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc0.d/K60crond
+rm -f /mnt/userfs/etc/rc0.d/K09sshd
+rm -f /mnt/userfs/etc/rc0.d/K80networking
+rm -f /mnt/userfs/etc/rc0.d/K36avahi-daemon
+rm -f /mnt/userfs/etc/rc1.d/K20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc1.d/K60crond
+rm -f /mnt/userfs/etc/rc1.d/K09sshd
+rm -f /mnt/userfs/etc/rc1.d/K80networking
+rm -f /mnt/userfs/etc/rc1.d/K36avahi-daemon
+rm -f /mnt/userfs/etc/rc2.d/K05vpn
+rm -f /mnt/userfs/etc/rc2.d/S09sshd
+rm -f /mnt/userfs/etc/rc2.d/S20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc2.d/S02dbus-1
+rm -f /mnt/userfs/etc/rc2.d/S01networking
+rm -f /mnt/userfs/etc/rc2.d/S90crond
+rm -f /mnt/userfs/etc/rc2.d/K80networking
+rm -f /mnt/userfs/etc/rc2.d/S19syslog
+rm -f /mnt/userfs/etc/rc2.d/S21avahi-daemon
+rm -f /mnt/userfs/etc/rc3.d/S09sshd
+rm -f /mnt/userfs/etc/rc3.d/S20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc3.d/S02dbus-1
+rm -f /mnt/userfs/etc/rc3.d/S01networking
+rm -f /mnt/userfs/etc/rc3.d/S90crond
+rm -f /mnt/userfs/etc/rc3.d/S19syslog
+rm -f /mnt/userfs/etc/rc3.d/S21avahi-daemon
+rm -f /mnt/userfs/etc/rc4.d/S09sshd
+rm -f /mnt/userfs/etc/rc4.d/S20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc4.d/S01networking
+rm -f /mnt/userfs/etc/rc4.d/S90crond
+rm -f /mnt/userfs/etc/rc4.d/S21avahi-daemon
+rm -f /mnt/userfs/etc/rc5.d/S09sshd
+rm -f /mnt/userfs/etc/rc5.d/S20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc5.d/S01networking
+rm -f /mnt/userfs/etc/rc5.d/S90crond
+rm -f /mnt/userfs/etc/rc5.d/S21avahi-daemon
+rm -f /mnt/userfs/etc/rc6.d/K20busybox-ifplugd
+rm -f /mnt/userfs/etc/rc6.d/K60crond
+rm -f /mnt/userfs/etc/rc6.d/K09sshd
+rm -f /mnt/userfs/etc/rc6.d/K80networking
+rm -f /mnt/userfs/etc/rc6.d/K36avahi-daemon
+rm -f /mnt/userfs/etc/rcS.d/S04crdd.sh
+rm -f /mnt/userfs/etc/rcS.d/S04udev
+rm -f /mnt/userfs/etc/rcS.d/S36udev-cache
+rm -f /mnt/userfs/etc/rcS.d/S03niwatchdogpet
+rm -f /mnt/userfs/lib/libaudit.so.1
+rm -f /mnt/userfs/lib/libauparse.so.0
+rm -f /mnt/userfs/lib/libm.so.6
+rm -f /mnt/userfs/lib/security/pam_niauth.so
+rm -f /mnt/userfs/lib/libutil.so.1
+rm -f /mnt/userfs/lib/libpthread.so.0
+rm -f /mnt/userfs/lib/libpam_misc.so.0
+rm -f /mnt/userfs/lib/libc.so.6
+rm -f /mnt/userfs/lib/libnss_compat.so.2
+rm -f /mnt/userfs/lib/libcrypt.so.1
+rm -f /mnt/userfs/var/local/natinst/certstore
+rm -f /mnt/userfs/usr/bin/logger
+rm -f /mnt/userfs/usr/lib/libnl-nf-3.so.200
+rm -f /mnt/userfs/usr/lib/libdbus-1.so.3
+rm -f /mnt/userfs/usr/lib/libnl-route-3.so.200
+rm -f /mnt/userfs/usr/lib/libbz2.so.0
+rm -f /mnt/userfs/usr/lib/libexpat.so.1
+rm -f /mnt/userfs/usr/lib/libnl-3.so.200
+rm -f /mnt/userfs/usr/local/natinst/lib/mod_niws.so.1
+rm -f /mnt/userfs/usr/local/natinst/lib/mod_nisessmgr.so.13
+rm -f /mnt/userfs/usr/local/natinst/lib/mod_niesp.so.13
+rm -f /mnt/userfs/usr/local/natinst/lib/libnigmp.so.5
+rm -f /mnt/userfs/usr/local/natinst/lib/libws_runtime.so.13
+rm -f /mnt/userfs/usr/local/natinst/lib/libws_repl.so.13
+rm -f /mnt/userfs/sbin/vigr.shadow
+
+# Cleanup remaining directory symlinks after uninstall
+
+rm -f /mnt/userfs/tmp
+rm -f /mnt/userfs/var/log
+rm -f /mnt/userfs/var/run
+rm -f /mnt/userfs/var/tmp
+rm -f /mnt/userfs/var/lock
+rm -f /mnt/userfs/var/cache
+
+# Cleanup remaining files after uninstall
+
+rm -f /mnt/userfs/etc/modprobe.d/cfg80211
+rm -f /mnt/userfs/etc/udev-cache.tar.gz
+rm -f /mnt/userfs/etc/avahi/etc/localtime
+rm -f /mnt/userfs/etc/resolv.conf
+rm -f /mnt/userfs/etc/natinst/appweb/NISystemWebServer.ini
+rm -f /mnt/userfs/lib/modules/3.14.40-rt37-ni-3.0.0b31/modules.builtin.bin
+rm -f /mnt/userfs/lib/modules/3.14.40-rt37-ni-3.0.0b31/modules.devname
+rm -f /mnt/userfs/run/utmp
+rm -f /mnt/userfs/run/mount/utab
+rm -f /mnt/userfs/var/lib/dbus/machine-id
+rm -f /mnt/userfs/var/local/natinst/nisysapi/libnisyscfgExpert.so.15.0.0_32_createSystemConfigBuiltInExpert.cache
+rm -f /mnt/userfs/usr/local/natinst/labview/webserver/niwsdebugserver.conf

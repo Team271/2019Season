@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Source the tools, prepare the environment
+. /usr/local/natinst/tools/versioning_utils.sh
+
+# Unregister with KAL
+uninstall_nidriver niembcanzynqk /usr/local/natinst/niembcanzynqk/src/objects/niembcanzynqk-unversioned.o

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if ! update-rc.d -f NiRioServer remove; then
+	echo "ERROR: Failed to run update-rc.d"
+	exit -4
+fi

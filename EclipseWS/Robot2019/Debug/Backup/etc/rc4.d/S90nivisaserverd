@@ -1,0 +1,35 @@
+#! /bin/sh
+#
+
+progname=nivisaserver
+progpath=/usr/local/vxipnp/linux/NIvisa/nivisaserver
+
+# init.d script from National Instruments
+test -x "$progpath" || exit 0
+
+startdaemon(){
+   start-stop-daemon -c lvuser:ni --start -x $progpath &
+   test $? -eq 1 || echo "done"
+}
+stopdaemon(){
+   start-stop-daemon --stop --quiet -x $progpath
+}
+
+case "$1" in
+   start)
+   startdaemon
+   ;;
+   stop)
+   stopdaemon
+   ;;
+   force-reload|restart|reload)
+   stopdaemon
+   startdaemon
+   ;;
+   *)
+   echo "Usage: $progname {start|stop|restart|reload|force-reload}" >&2
+   exit 1
+   ;;
+esac
+
+exit 0

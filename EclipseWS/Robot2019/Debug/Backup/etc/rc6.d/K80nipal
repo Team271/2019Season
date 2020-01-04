@@ -1,0 +1,192 @@
+#!/bin/bash
+#
+#  nipal
+#  NI-PAL startup script for Linux
+#
+#  (C) Copyright 2002-2017,
+#  National Instruments Corporation.
+#  All Rights reserved.
+#
+#  originated:  6 November 2002
+#
+#  following is the init header information for RH Linux variants, used by
+#  /sbin/chkconfig
+# chkconfig:         2345 60 60
+# description:       Core driver services for National Instruments drivers.
+#
+#  following is the init header information for SuSE Linux, used by /sbin/insserv
+### BEGIN INIT INFO
+# Provides:          nipal
+# Required-Start:    $syslog $remote_fs
+# Should-Start:      dkms
+# X-UnitedLinux-Should-Start: $time
+# Required-Stop:     $syslog $remote_fs
+# X-UnitedLinux-Should-Stop: $time
+# Default-Start:     2 3 5
+# Default-Stop:      0 1 6
+# Short-Description: NI Core Driver Services
+# Description:       Start to provide core driver services to National Instruments drivers.
+### END INIT INFO
+#
+
+RETVAL=0
+nipal_sysconfdir=/etc/nipal
+nipal_sharedstatedir=/var/lib/nipal
+nipalEtc_legacy=/etc/natinst/nipal
+
+# produces a comma-separated list of modules using the specified one
+moduleInUseBy() {
+   lsmod | awk "/^$1\s/"'{ print $4 } '
+}
+
+# for a given module, examine the lsmod output, to look at the comma separated list of
+# other modules that depend on this one, and attempt to unload those
+recursiveUnloadModule() {
+   local module=$1
+
+   saveifs=$IFS
+   IFS=,
+   for usingmodule in $(moduleInUseBy ${module}); do
+      recursiveUnloadModule "${usingmodule}"
+   done
+   IFS=$saveifs
+
+   modprobe -r "${module}" > /dev/null 2>&1
+}
+
+killInstancesOf() {
+   for PID in `ps axw | grep $1 | grep -v grep | awk '{print $1;}'`; do
+      kill $PID
+      timeout=0
+      while [ $timeout -lt 10 ]; do
+         if ps axw -o pid | grep -w $PID > /dev/null; then
+            sleep 1
+         else
+            break
+         fi
+         timeout=`expr $timeout + 1`
+      done
+   done
+}
+
+start() {
+   if ! status ; then
+      if ! modinfo nipalk > /dev/null 2>&1 ; then
+         echo "error: nipalk.ko not found"
+         echo "possible cause: "
+         echo "   nipalk was not versioned for kernel $(uname -r)"
+         return 1
+      fi
+
+      if ! modprobe nipalk > /tmp/nipalk-load.log 2>&1; then
+         cat /tmp/nipalk-load.log
+         echo " "
+         echo "error: nipalk failed to load"
+         echo "error: Consult the product documentation for support"
+         echo "error: Or search for solutions on ni.com."
+         return 1
+      fi
+
+      PALCHARMAJOR=`grep nikal /proc/devices | awk '{ print $1 }'`
+
+      rm -f /dev/nipalk
+      if ! mknod /dev/nipalk c $PALCHARMAJOR 0; then
+         echo " "
+         echo "error: failed to create /dev/nipalk"
+         echo "error: Consult the product documentation for support"
+         echo "error: Or search for solutions on ni.com."
+         return 1
+      fi
+      chmod 0666 /dev/nipalk
+
+      mkdir -p "$nipal_sharedstatedir"
+      nipalPersistentDataFile="$nipal_sharedstatedir"/nipalps.bin
+      if [ ! -f $nipalPersistentDataFile ]; then
+         echo -n "%" > $nipalPersistentDataFile
+         chmod 600 $nipalPersistentDataFile
+      fi
+      cat $nipalPersistentDataFile > /dev/nipalk
+
+      # device matching via devinit.d must happen after pal persistent storage initialization
+      # to prevent a race condition
+      [ -d $nipalEtc_legacy/inf ] && nipaldevinit $(find $nipalEtc_legacy/inf -iname \*.inf | sort) >/dev/null 2>&1
+      nipaldevinit $(find $nipal_sysconfdir/devinit.d -iname \*.inf | sort) >/dev/null 2>&1
+
+      killInstancesOf nipalps
+      nipalps /dev/nipalk $nipalPersistentDataFile &
+
+      shopt -s nullglob
+      for MOD in "$nipal_sharedstatedir"/bootdrivers.d/* "$nipalEtc_legacy"/bootdrivers/*; do
+         while read line; do
+            /sbin/modprobe $line
+         done <"$MOD"
+      done
+
+      if [ -d /var/lock/subsys ]; then
+         touch /var/lock/subsys/nipal
+      fi
+   fi
+   return 0
+}
+
+stop() {
+   killInstancesOf nipalps
+
+   if ! recursiveUnloadModule nipalk; then
+      echo " "
+      echo "error: unable to unload nipalk"
+      return 1
+   fi
+
+   rm -f /dev/nipalk
+
+   if [ -f /var/lock/subsys/nipal ]; then
+      rm -f /var/lock/subsys/nipal
+   fi
+
+   return 0
+}
+
+restart() {
+   stop
+   start
+}
+
+status() {
+   if [ -f /var/lock/subsys/nipal ]; then
+      return 0
+   else
+      return 1
+   fi
+}
+
+case "$1" in
+   start)
+      start
+      ;;
+   stop)
+      stop
+      ;;
+   restart)
+      restart
+      ;;
+   reload)
+      restart
+      ;;
+   force-reload)
+      restart
+      ;;
+   status)
+      status
+      ;;
+   condrestart)
+      restart
+      ;;
+   *)
+      echo $"Usage: $0 {start|stop|restart|reload|force-reload|status|condrestart}"
+      exit 2
+      ;;
+esac
+
+exit $?
+

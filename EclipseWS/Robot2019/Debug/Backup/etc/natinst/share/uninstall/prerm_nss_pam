@@ -1,0 +1,5 @@
+#! /bin/sh
+set -e
+
+# Remove startup and shutdown sym-links
+update-rc.d -f niauth remove

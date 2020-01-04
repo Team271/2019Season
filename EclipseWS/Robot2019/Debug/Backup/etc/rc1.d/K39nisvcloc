@@ -1,0 +1,42 @@
+#! /bin/sh
+
+ulimit -s 256
+
+progname="NI Service Locator"
+progpath=/usr/local/natinst/bin/nisvcloc
+startargs="-D -n"
+stopargs=
+
+# init.d script from National Instruments
+test -x "$progpath" || exit 0
+
+startdaemon(){
+	echo -n "Starting $progname: "
+	start-stop-daemon --start -x $progpath -- $startargs
+	test $? -eq 1 || echo "done"
+}
+stopdaemon(){
+	echo -n "Stopping $progname: "
+	start-stop-daemon --stop -x $progpath
+	echo "done"
+}
+
+case "$1" in
+  start)
+	startdaemon
+	;;
+  stop)
+  	stopdaemon
+	;;
+  force-reload|restart|reload)
+  	stopdaemon
+	startdaemon
+	;;
+  *)
+	echo "Usage: $progname {start|stop|restart|reload|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
+

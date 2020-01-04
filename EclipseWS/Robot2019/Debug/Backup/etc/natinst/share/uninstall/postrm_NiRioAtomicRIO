@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if ! rm -rf /var/local/natinst/nirio; then
+	echo "ERROR: Failed to remove the /var/local/natinst/nirio folder"
+	exit -2
+fi
+
+if ! rm -f /etc/natinst/nirio; then
+	echo "ERROR: Failed to remove the /etc/natinst/nirio symlink"
+	exit -3
+fi

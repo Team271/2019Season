@@ -1,0 +1,10 @@
+#! /bin/sh
+#
+
+if [ -n "$D" ]; then
+	OPT="-r $D"
+else
+	OPT=""
+fi
+
+update-rc.d $OPT -f nirtmdnsd remove

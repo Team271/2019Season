@@ -1,0 +1,11 @@
+#!/bin/sh
+
+#This file _should_ have been removed already
+if [[ -e /etc/init.d/vsftpd ]]
+then
+	rm /etc/init.d/vsftpd
+fi
+
+#Remove the scripts!
+update-rc.d vsftpd remove
+

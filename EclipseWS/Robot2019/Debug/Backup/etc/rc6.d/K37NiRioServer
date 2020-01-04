@@ -1,0 +1,44 @@
+#! /bin/sh
+#
+
+progname=nirioserver
+progpath=/usr/local/natinst/bin/$progname
+
+# Installing from MAX will install to the old path above
+# Installing from opkg will install the binary to the new path below
+if ! [[ -f $progpath ]]; then
+   progpath=/usr/bin/$progname
+fi
+
+# init.d script from National Instruments
+test -x "$progpath" || exit 0
+
+startdaemon(){
+	echo -n "Starting $progname: "
+	start-stop-daemon --start --background --chuid lvuser:ni -x $progpath
+	test $? -eq 1 || echo "done"
+}
+stopdaemon(){
+	echo -n "Stopping $progname: "
+	start-stop-daemon --stop --quiet --chuid lvuser:ni -x $progpath
+	echo "done"
+}
+
+case "$1" in
+  start)
+	startdaemon
+	;;
+  stop)
+	stopdaemon
+	;;
+  force-reload|restart|reload)
+	stopdaemon
+	startdaemon
+	;;
+  *)
+	echo "Usage: $progname {start|stop|restart|reload|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

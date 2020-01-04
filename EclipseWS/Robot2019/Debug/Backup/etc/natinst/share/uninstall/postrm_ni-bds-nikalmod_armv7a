@@ -1,0 +1,2 @@
+#!/bin/sh
+rm -f /etc/natinst/nibds 2> /dev/null

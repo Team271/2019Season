@@ -1,0 +1,61 @@
+/*
+ *    FRC Team 271's 2019 Pre Season Code
+ *    Copyright (C) 2019  FRC Team 271
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+#include "ThreadNetwork.hpp"
+
+#include "ui_DashBoardNew.h"
+
+class T271TreeItem : public QObject
+{
+	Q_OBJECT
+
+private:
+   QString ChartName_ = "";
+
+   MyThread* mThread = nullptr;
+
+   QChart* chart = nullptr;
+   QChartView* chartView = nullptr;
+   QValueAxis* axisX = nullptr;
+   QValueAxis* axisY = nullptr;
+
+   QList<QLineSeries*> seriesList;
+
+   double xAxisMax = 0;
+   double xAxisMin = 0;
+
+   double yAxisMax = 0;
+   double yAxisMin = 0;
+
+public:
+   T271TreeItem(QString argChartName, MyThread* argNetworkThread, QChartView* argChartView);
+	~T271TreeItem();
+
+   QString GetChartName(void);
+   uint32_t GetSeriesCount( void );
+
+public slots:
+   void onEnableChartUpdates( bool argEnableChartUpdate );
+
+   void onUpdateRanges(void);
+
+   void onAddSeries(QString argChartName);
+   void onAddPoint(QString argChartName, qreal argSeriesIndex, qreal time, qreal argData, qreal startTime );
+   void onAddPointList(QString argChartName, qreal argSeriesIndex, QList<QPointF>* argData, qreal startTime);
+};

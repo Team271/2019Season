@@ -1,0 +1,6 @@
+#! /bin/sh
+set -e
+
+# XXX Workaround for CAR 438688. Remove SO-NAME sym-links created by
+# this installation. Otherwise, downgrading to certain versions fails.
+ldconfig

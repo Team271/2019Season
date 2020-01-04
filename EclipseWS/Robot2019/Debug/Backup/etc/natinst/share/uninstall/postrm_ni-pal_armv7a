@@ -1,0 +1,14 @@
+#!/bin/sh
+
+rm -f /usr/lib/libnipalu.so.1
+rm -f /usr/lib/libnipalu.so.18.2.0
+
+if [ -h /etc/init.d/nipal ]; then
+   rm -f /etc/init.d/nipal
+   update-rc.d nipal remove
+fi
+
+if [ -h /etc/natinst/nipal ]; then
+   rm -f /etc/natinst/nipal
+   rmdir /etc/natinst || true # ignore failure 
+fi

@@ -1,0 +1,60 @@
+#!/bin/sh
+# Copyright (c) 2012-2013 National Instruments.
+# All rights reserved.
+
+arch=`uname -m`
+safepath=/boot/.safe
+
+# x64 files to check existence
+kernel=${safepath}/"bzImage"
+ramdisk=${safepath}/"ramdisk.gz"
+grub_bootimage_cfg=${safepath}/"bootimage.cfg"
+
+# arm files to check existence
+itb=${safepath}/linux_safemode.itb
+
+# critical services w/o which the system cannot function and will reboot
+# to safemode (list one per line)
+DAEMONS="niauth_daemon
+SystemWebServer
+avahi-daemon
+nisvcloc"
+
+safemode_found=false
+if [ "$arch" = "armv7l" ]; then
+    [ -s "$itb" ] && safemode_found=true
+elif [ "$arch" = "x86_64" ]; then
+    [ -s "$kernel" ] && [ -s "$ramdisk" ] && [ -s "$grub_bootimage_cfg" ] && safemode_found=true
+fi
+
+if [ "$safemode_found" = "false" ]; then
+    echo "WARNING: Improper installation, safemode firmware image missing."
+    echo "Running (Safe Mode Firmware Not Found)" > /tmp/ni_system_state
+    exit 1
+fi
+
+if [ "$1" = "start" ]
+then
+    REBOOT=`/usr/local/natinst/bin/nirtcfg --get section=Startup,token="ValidateStartup",value=true | tr "[:upper:]" "[:lower:]"`
+
+    for d in $DAEMONS
+    do
+        PS=`busybox ps -o comm,stat | grep -sF -m 1 "$d" | awk '{print $2}'`
+        case "$PS" in
+            *[RDS]*)
+                continue
+                ;;
+            *)
+                echo "The "$d" daemon failed to start ..."
+                if [ $REBOOT != "false" ]; then
+                    echo "Rebooting to safe-mode ..."
+                    /etc/init.d/nisetbootmode force-safemode "Improper Installation"
+                    reboot
+                else
+                    echo "Critical service(s) missing."
+                    echo "Proceeding because ValidateStartup is disabled in ni-rt.ini."
+                fi
+                ;;
+        esac
+    done
+fi

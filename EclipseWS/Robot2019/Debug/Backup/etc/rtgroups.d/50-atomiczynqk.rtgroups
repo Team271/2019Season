@@ -1,0 +1,2 @@
+# Raise RIO board driver interrupt thread priority for determinism
+atomiczynqk:f:96:*:\[irq\/[0-9]+-atomicz.*\]

@@ -1,0 +1,53 @@
+#!/bin/sh
+
+usrPath="/usr/local/natinst/bin/niwifibledd"
+varPath="/var/volatile/run/natinst/niwifibledd"
+
+progName="niwifibledd"
+
+startDaemon(){
+	[ "$VERBOSE" != no ] && echo -n "Starting $progName: "
+
+	# We only start niwifibledd on WiFi targets to avoid increased jitter
+	# on those targets. Adding non-WiFi PIDs here is a bad idea.
+	pid=`fw_printenv DeviceCode | awk '{print tolower($0)}'`
+	if [ $pid != 'devicecode=0x7840' -a $pid != 'devicecode=0x7841' -a \
+	     $pid != 'devicecode=0x762f' -a $pid != 'devicecode=0x7928' -a \
+	     $pid != 'devicecode=0x793c' ]
+	then
+		[ "$VERBOSE" != no ] && echo "not a WiFi target, exiting"
+		return
+	fi
+
+	mkdir -p "$varPath"
+	start-stop-daemon --start --background -x $usrPath -- -start
+	[ "$VERBOSE" != no ] && echo "done"
+}
+
+stopDaemon(){
+	mkdir -p "$varPath"
+
+	[ "$VERBOSE" != no ] && echo -n "Stopping $progName: "
+	start-stop-daemon --stop --quiet -x $usrPath
+	[ "$VERBOSE" != no ] && echo "done"
+}
+
+case "$1" in
+  start)
+        startDaemon
+        ;;
+  stop)
+        stopDaemon
+        ;;
+  force-reload|restart|reload)
+        stopDaemon
+        startDaemon
+        ;;
+  *)
+        echo "Usage: $progName {start|stop|restart|reload|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+
